@@ -20,7 +20,7 @@ services:
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_DATASOURCE_URL=jdbc:postgresql://polar-postgres:5432/polardb_catalog
       - SPRING_PROFILES_ACTIVE=testdata
-  
+
   order-service:
     depends_on:
       - polar-postgres
@@ -38,7 +38,7 @@ services:
       - SPRING_R2DBC_URL=r2dbc:postgresql://polar-postgres:5432/polardb_order
       - SPRING_FLYWAY_URL=jdbc:postgresql://polar-postgres:5432/polardb_order
       - SPRING_RABBITMQ_HOST=polar-rabbitmq
-  
+
   dispatcher-service:
     depends_on:
       - polar-rabbitmq
@@ -70,7 +70,7 @@ services:
       - ORDER_SERVICE_URL=http://order-service:9002
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_REDIS_HOST=polar-redis
-  
+
   config-service:
     image: "config-service"
     container_name: "config-service"
@@ -83,7 +83,7 @@ services:
       # Buildpacks environment variable to enable debug through a socket on port 9888
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=9888
-  
+
   # Backing Services
 
   polar-postgres:
@@ -102,7 +102,7 @@ services:
     container_name: "polar-redis"
     ports:
       - 6379:6379
-  
+
   polar-rabbitmq:
     image: rabbitmq:3.9-management
     container_name: polar-rabbitmq
@@ -111,3 +111,23 @@ services:
       - 15672:15672
     volumes:
       - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+
+  polar-keycloak:
+    image: quay.io/keycloak/keycloak:17.0.0-legacy
+    container_name: "polar-keycloak"
+    volumes:
+      - ./keycloak:/opt/jboss/keycloak/imports
+    environment:
+      - KEYCLOAK_USER=user
+      - KEYCLOAK_PASSWORD=password
+      - KEYCLOAK_IMPORT=/opt/jboss/keycloak/imports/realm-export.json
+    ports:
+      - 8080:8080
+
+  polar-ui:
+    image: "ghcr.io/polarbookshop/polar-ui:latest"
+    container_name: "polar-ui"
+    ports:
+      - 9004:9004
+    environment:
+      - PORT=9004
